@@ -18,7 +18,33 @@ public class UsuarioService {
         return usuarioRepository.findAll();
     }
 
-    public Usuario usuarioPorId(long id) throws ObjectNotFoundException {
+    public Usuario usuarioPorId(long id) {
+        var usuarioEncontrado = verificarIdUsuario(id);
+        return usuarioEncontrado;
+    }
+
+    public void deletarUsuarioPorId(long id) {
+        var usuarioEncontrado = verificarIdUsuario(id);
+        usuarioRepository.delete(usuarioEncontrado);
+    }
+
+    public Usuario criarUsuario(Usuario usuario) {
+        verificarCpfUsuario(usuario.getCpf());
+        verificarEmailUsuario(usuario.getEmail());
+
+        return usuarioRepository.save(usuario);
+    }
+
+    public Usuario atualizarUsuario(long id, Usuario usuario) {
+        verificarIdUsuario(id);
+        verificarCpfUsuario(usuario.getCpf());
+        verificarEmailUsuario(usuario.getEmail());
+
+        usuario.setId(id);
+        return usuarioRepository.save(usuario);
+    }
+
+    public Usuario verificarIdUsuario(long id) {
         var optUsuario = usuarioRepository.findById(id);
 
         if (optUsuario.isEmpty()) {
@@ -27,13 +53,6 @@ public class UsuarioService {
         }
 
         return optUsuario.get();
-    }
-
-    public Usuario criarUsuario(Usuario usuario) {
-        verificarCpfUsuario(usuario.getCpf());
-        verificarEmailUsuario(usuario.getEmail());
-
-        return usuarioRepository.save(usuario);
     }
 
     private void verificarCpfUsuario(String cpf) {

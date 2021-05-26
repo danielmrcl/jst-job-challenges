@@ -26,9 +26,21 @@ public class UsuarioController {
         return usuarioService.usuarioPorId(id);
     }
 
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletarUsuarioPorId(@PathVariable long id) {
+        usuarioService.deletarUsuarioPorId(id);
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Usuario criarUsuario(@RequestBody Usuario usuario) {
         return usuarioService.criarUsuario(usuario);
+    }
+
+    @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Usuario atualizarUsuario(@PathVariable long id, @RequestBody Usuario usuario) {
+        return usuarioService.atualizarUsuario(id, usuario);
     }
 }
