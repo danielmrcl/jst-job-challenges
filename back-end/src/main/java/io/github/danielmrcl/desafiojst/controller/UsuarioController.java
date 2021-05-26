@@ -25,4 +25,10 @@ public class UsuarioController {
     public Usuario procurarUsuarioPorId(@PathVariable long id) throws ObjectNotFoundException {
         return usuarioService.usuarioPorId(id);
     }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public Usuario criarUsuario(@RequestBody Usuario usuario) {
+        return usuarioService.criarUsuario(usuario);
+    }
 }

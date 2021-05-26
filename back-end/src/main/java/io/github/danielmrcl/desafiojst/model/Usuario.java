@@ -16,7 +16,7 @@ import java.time.LocalDate;
 @Builder
 public class Usuario {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Column(name = "nome", nullable = false)

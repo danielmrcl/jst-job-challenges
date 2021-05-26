@@ -1,5 +1,6 @@
 package io.github.danielmrcl.desafiojst.service;
 
+import io.github.danielmrcl.desafiojst.exception.ObjectAlreadyExistsException;
 import io.github.danielmrcl.desafiojst.exception.ObjectNotFoundException;
 import io.github.danielmrcl.desafiojst.model.Usuario;
 import io.github.danielmrcl.desafiojst.repository.UsuarioRepository;
@@ -26,5 +27,30 @@ public class UsuarioService {
         }
 
         return optUsuario.get();
+    }
+
+    public Usuario criarUsuario(Usuario usuario) {
+        verificarCpfUsuario(usuario.getCpf());
+        verificarEmailUsuario(usuario.getEmail());
+
+        return usuarioRepository.save(usuario);
+    }
+
+    private void verificarCpfUsuario(String cpf) {
+        var optUsuario = usuarioRepository.findByCpf(cpf);
+
+        if (optUsuario.isPresent()) {
+            String message = String.format("Usuario CPF %s: já existe no banco de dados", cpf);
+            throw new ObjectAlreadyExistsException(message);
+        }
+    }
+
+    private void verificarEmailUsuario(String email) {
+        var optUsuario = usuarioRepository.findByEmail(email);
+
+        if (optUsuario.isPresent()) {
+            String message = String.format("Usuario EMAIL %s: já existe no banco de dados", email);
+            throw new ObjectAlreadyExistsException(message);
+        }
     }
 }
