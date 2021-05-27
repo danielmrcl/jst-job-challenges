@@ -1,5 +1,7 @@
 package io.github.danielmrcl.desafiojst.service;
 
+import io.github.danielmrcl.desafiojst.apis.EmailApi;
+import io.github.danielmrcl.desafiojst.apis.exceptions.InvalidEmailException;
 import io.github.danielmrcl.desafiojst.exception.ObjectAlreadyExistsException;
 import io.github.danielmrcl.desafiojst.exception.ObjectNotFoundException;
 import io.github.danielmrcl.desafiojst.model.Usuario;
@@ -8,6 +10,7 @@ import io.github.danielmrcl.desafiojst.model.mapper.UsuarioMapper;
 import io.github.danielmrcl.desafiojst.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -77,7 +80,18 @@ public class UsuarioService {
     }
 
     private void verificarEmailUsuario(String email) {
-        // TODO: consumir api de email -> https://api.eva.pingutil.com/email?email=%s
+        String url = String.format("https://api.eva.pingutil.com/email?email=%s", email);
+
+        RestTemplate restTemplate = new RestTemplate();
+        var emailApi = restTemplate.getForObject(url, EmailApi.class);
+
+        boolean emailEntregavel = emailApi.getData().isDeliverable();
+        boolean emailSpam = emailApi.getData().isSpam();
+
+        if (!emailEntregavel || emailSpam) {
+            String message = "O email informado não é valido, tente outro.";
+            throw new InvalidEmailException(message);
+        }
 
         var optUsuario = usuarioRepository.findByEmail(email);
 
