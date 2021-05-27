@@ -1,28 +1,28 @@
 package io.github.danielmrcl.desafiojst.controller;
 
-import io.github.danielmrcl.desafiojst.exception.ObjectNotFoundException;
-import io.github.danielmrcl.desafiojst.model.Usuario;
+import io.github.danielmrcl.desafiojst.model.dto.UsuarioDTO;
 import io.github.danielmrcl.desafiojst.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/usuarios")
+@RequestMapping("/api/usuarios")
 public class UsuarioController {
     @Autowired
     private UsuarioService usuarioService;
 
     @GetMapping
-    public List<Usuario> listarUsuarios() {
+    public List<UsuarioDTO> listarUsuarios() {
         return usuarioService.listarUsuarios();
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Usuario procurarUsuarioPorId(@PathVariable long id) throws ObjectNotFoundException {
+    public UsuarioDTO procurarUsuarioPorId(@PathVariable long id) {
         return usuarioService.usuarioPorId(id);
     }
 
@@ -34,13 +34,13 @@ public class UsuarioController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Usuario criarUsuario(@RequestBody Usuario usuario) {
-        return usuarioService.criarUsuario(usuario);
+    public UsuarioDTO criarUsuario(@RequestBody @Valid UsuarioDTO usuarioDTO) {
+        return usuarioService.criarUsuario(usuarioDTO);
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.CREATED)
-    public Usuario atualizarUsuario(@PathVariable long id, @RequestBody Usuario usuario) {
-        return usuarioService.atualizarUsuario(id, usuario);
+    public UsuarioDTO atualizarUsuario(@PathVariable long id, @RequestBody @Valid UsuarioDTO usuarioDTO) {
+        return usuarioService.atualizarUsuario(id, usuarioDTO);
     }
 }

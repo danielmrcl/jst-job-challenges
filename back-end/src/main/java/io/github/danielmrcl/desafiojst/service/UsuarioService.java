@@ -3,24 +3,33 @@ package io.github.danielmrcl.desafiojst.service;
 import io.github.danielmrcl.desafiojst.exception.ObjectAlreadyExistsException;
 import io.github.danielmrcl.desafiojst.exception.ObjectNotFoundException;
 import io.github.danielmrcl.desafiojst.model.Usuario;
+import io.github.danielmrcl.desafiojst.model.dto.UsuarioDTO;
+import io.github.danielmrcl.desafiojst.model.mapper.UsuarioMapper;
 import io.github.danielmrcl.desafiojst.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    public List<Usuario> listarUsuarios() {
-        return usuarioRepository.findAll();
+    private UsuarioMapper usuarioMapper = UsuarioMapper.INSTANCE;
+
+    public List<UsuarioDTO> listarUsuarios() {
+        var usuarios = usuarioRepository.findAll();
+
+        return usuarios.stream()
+                .map(usuarioMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
-    public Usuario usuarioPorId(long id) {
+    public UsuarioDTO usuarioPorId(long id) {
         var usuarioEncontrado = verificarIdUsuario(id);
-        return usuarioEncontrado;
+        return usuarioMapper.toDTO(usuarioEncontrado);
     }
 
     public void deletarUsuarioPorId(long id) {
@@ -28,20 +37,23 @@ public class UsuarioService {
         usuarioRepository.delete(usuarioEncontrado);
     }
 
-    public Usuario criarUsuario(Usuario usuario) {
-        verificarCpfUsuario(usuario.getCpf());
-        verificarEmailUsuario(usuario.getEmail());
+    public UsuarioDTO criarUsuario(UsuarioDTO usuarioDTO) {
+        verificarCpfUsuario(usuarioDTO.getCpf());
+        verificarEmailUsuario(usuarioDTO.getEmail());
 
-        return usuarioRepository.save(usuario);
+        var usuarioParaSalvar = usuarioMapper.toModel(usuarioDTO);
+
+        return usuarioMapper.toDTO(usuarioRepository.save(usuarioParaSalvar));
     }
 
-    public Usuario atualizarUsuario(long id, Usuario usuario) {
+    public UsuarioDTO atualizarUsuario(long id, UsuarioDTO usuarioDTO) {
         verificarIdUsuario(id);
-        verificarCpfUsuario(usuario.getCpf());
-        verificarEmailUsuario(usuario.getEmail());
+        verificarCpfUsuario(usuarioDTO.getCpf());
+        verificarEmailUsuario(usuarioDTO.getEmail());
+        usuarioDTO.setId(id);
 
-        usuario.setId(id);
-        return usuarioRepository.save(usuario);
+        var usuarioParaAtualizar = usuarioMapper.toModel(usuarioDTO);
+        return usuarioMapper.toDTO(usuarioRepository.save(usuarioParaAtualizar));
     }
 
     public Usuario verificarIdUsuario(long id) {
@@ -65,6 +77,8 @@ public class UsuarioService {
     }
 
     private void verificarEmailUsuario(String email) {
+        // TODO: consumir api de email -> https://api.eva.pingutil.com/email?email=%s
+
         var optUsuario = usuarioRepository.findByEmail(email);
 
         if (optUsuario.isPresent()) {
