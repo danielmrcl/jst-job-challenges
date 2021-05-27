@@ -38,5 +38,5 @@ public class UsuarioDTO {
     private LocalDate dataNasc;
 
     @NotNull
-    private int carteiraId;
+    private CarteiraDTO carteira;
 }

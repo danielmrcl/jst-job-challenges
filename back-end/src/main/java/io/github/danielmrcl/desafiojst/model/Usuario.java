@@ -34,6 +34,6 @@ public class Usuario {
     @Column(name = "data_nasc", nullable = false)
     private LocalDate dataNasc;
 
-    @Column(name = "carteira_id", nullable = false)
-    private int carteiraId; // TODO: relacionamento com a entidade carteira
+    @OneToOne(cascade = CascadeType.ALL, optional = false)
+    private Carteira carteira;
 }
