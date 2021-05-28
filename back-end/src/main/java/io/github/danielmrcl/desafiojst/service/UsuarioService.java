@@ -1,11 +1,13 @@
 package io.github.danielmrcl.desafiojst.service;
 
 import io.github.danielmrcl.desafiojst.apis.EmailApi;
-import io.github.danielmrcl.desafiojst.apis.exceptions.InvalidEmailException;
+import io.github.danielmrcl.desafiojst.exception.GenericErrorException;
 import io.github.danielmrcl.desafiojst.exception.ObjectAlreadyExistsException;
 import io.github.danielmrcl.desafiojst.exception.ObjectNotFoundException;
 import io.github.danielmrcl.desafiojst.model.Usuario;
+import io.github.danielmrcl.desafiojst.model.dto.CarteiraDTO;
 import io.github.danielmrcl.desafiojst.model.dto.UsuarioDTO;
+import io.github.danielmrcl.desafiojst.model.enums.TipoMoeda;
 import io.github.danielmrcl.desafiojst.model.mapper.UsuarioMapper;
 import io.github.danielmrcl.desafiojst.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +21,6 @@ import java.util.stream.Collectors;
 public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
-
     private UsuarioMapper usuarioMapper = UsuarioMapper.INSTANCE;
 
     public List<UsuarioDTO> listarUsuarios() {
@@ -41,23 +42,39 @@ public class UsuarioService {
     }
 
     public UsuarioDTO criarUsuario(UsuarioDTO usuarioDTO) {
-        verificarCpfUsuario(usuarioDTO.getCpf());
-        verificarEmailUsuario(usuarioDTO.getEmail());
+        verificarCpfUsuario(usuarioDTO.getCpf(), null);
+        verificarEmailUsuario(usuarioDTO.getEmail(), null);
+
+        var carteiraPadrao = CarteiraDTO.builder()
+                .id(usuarioDTO.getId())
+                .saldo(0)
+                .tipoMoeda(TipoMoeda.REAL)
+                .estadoAtivo(true)
+                .build();
+        usuarioDTO.setCarteira(carteiraPadrao);
 
         var usuarioParaSalvar = usuarioMapper.toModel(usuarioDTO);
-
         return usuarioMapper.toDTO(usuarioRepository.save(usuarioParaSalvar));
     }
 
     public UsuarioDTO atualizarUsuario(long id, UsuarioDTO usuarioDTO) {
-        verificarIdUsuario(id);
-        verificarCpfUsuario(usuarioDTO.getCpf());
-        verificarEmailUsuario(usuarioDTO.getEmail());
+        var usuarioEncontrado = verificarIdUsuario(id);
+        verificarCpfUsuario(usuarioDTO.getCpf(), id);
+        verificarEmailUsuario(usuarioDTO.getEmail(), id);
         usuarioDTO.setId(id);
 
         var usuarioParaAtualizar = usuarioMapper.toModel(usuarioDTO);
+        usuarioParaAtualizar.setCarteira(usuarioEncontrado.getCarteira());
+
         return usuarioMapper.toDTO(usuarioRepository.save(usuarioParaAtualizar));
     }
+
+    public UsuarioDTO atualizarUsuarioSemVerificar(UsuarioDTO usuarioDTO) {
+        var usuarioParaAtualizar = usuarioMapper.toModel(usuarioDTO);
+        return usuarioMapper.toDTO(usuarioRepository.save(usuarioParaAtualizar));
+    }
+
+    /* Métodos de verificação */
 
     public Usuario verificarIdUsuario(long id) {
         var optUsuario = usuarioRepository.findById(id);
@@ -70,16 +87,16 @@ public class UsuarioService {
         return optUsuario.get();
     }
 
-    private void verificarCpfUsuario(String cpf) {
+    private void verificarCpfUsuario(String cpf, Long ignorarId) {
         var optUsuario = usuarioRepository.findByCpf(cpf);
 
-        if (optUsuario.isPresent()) {
+        if (optUsuario.isPresent() && (ignorarId == null || optUsuario.get().getId() != ignorarId)) {
             String message = String.format("Usuario CPF %s: já existe no banco de dados", cpf);
             throw new ObjectAlreadyExistsException(message);
         }
     }
 
-    private void verificarEmailUsuario(String email) {
+    private void verificarEmailUsuario(String email, Long ignorarId) {
         String url = String.format("https://api.eva.pingutil.com/email?email=%s", email);
 
         RestTemplate restTemplate = new RestTemplate();
@@ -90,12 +107,12 @@ public class UsuarioService {
 
         if (!emailEntregavel || emailSpam) {
             String message = "O email informado não é valido, tente outro.";
-            throw new InvalidEmailException(message);
+            throw new GenericErrorException(message);
         }
 
         var optUsuario = usuarioRepository.findByEmail(email);
 
-        if (optUsuario.isPresent()) {
+        if (optUsuario.isPresent() && (ignorarId == null || optUsuario.get().getId() != ignorarId)) {
             String message = String.format("Usuario EMAIL %s: já existe no banco de dados", email);
             throw new ObjectAlreadyExistsException(message);
         }

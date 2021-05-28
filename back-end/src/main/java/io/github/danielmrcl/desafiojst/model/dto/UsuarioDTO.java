@@ -1,5 +1,6 @@
 package io.github.danielmrcl.desafiojst.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,6 +38,6 @@ public class UsuarioDTO {
     @NotNull
     private LocalDate dataNasc;
 
-    @NotNull
+    @JsonIgnore
     private CarteiraDTO carteira;
 }

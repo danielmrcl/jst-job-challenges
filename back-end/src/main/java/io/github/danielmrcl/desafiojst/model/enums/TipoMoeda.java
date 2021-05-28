@@ -6,10 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum TipoMoeda {
-    REAL("BRL"),
-    DOLAR("USD"),
-    EURO("EUR"),
-    BITCOIN("BTC");
+    REAL("R$"), DOLAR("US$"), EURO("€");
 
     private final String valor;
 }
