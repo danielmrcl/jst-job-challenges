@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class UsuarioService {
+    private final String APIURLBASE = "https://api.eva.pingutil.com/email";
+
     @Autowired
     private UsuarioRepository usuarioRepository;
     private UsuarioMapper usuarioMapper = UsuarioMapper.INSTANCE;
@@ -48,8 +50,8 @@ public class UsuarioService {
         var carteiraPadrao = CarteiraDTO.builder()
                 .id(usuarioDTO.getId())
                 .saldo(0)
-                .tipoMoeda(TipoMoeda.REAL)
-                .estadoAtivo(true)
+                .tipoMoeda(TipoMoeda.BRL)
+                .estadoAtivo(false)
                 .build();
         usuarioDTO.setCarteira(carteiraPadrao);
 
@@ -74,9 +76,7 @@ public class UsuarioService {
         return usuarioMapper.toDTO(usuarioRepository.save(usuarioParaAtualizar));
     }
 
-    /* Métodos de verificação */
-
-    public Usuario verificarIdUsuario(long id) {
+    private Usuario verificarIdUsuario(long id) {
         var optUsuario = usuarioRepository.findById(id);
 
         if (optUsuario.isEmpty()) {
@@ -97,11 +97,12 @@ public class UsuarioService {
     }
 
     private void verificarEmailUsuario(String email, Long ignorarId) {
-        String url = String.format("https://api.eva.pingutil.com/email?email=%s", email);
+        String url = String.format("%s?email=%s", APIURLBASE, email);
 
         RestTemplate restTemplate = new RestTemplate();
         var emailApi = restTemplate.getForObject(url, EmailApi.class);
 
+        assert emailApi != null;
         boolean emailEntregavel = emailApi.getData().isDeliverable();
         boolean emailSpam = emailApi.getData().isSpam();
 
