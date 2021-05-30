@@ -8,36 +8,38 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpSession;
+
 @RestController
-@RequestMapping("/api/usuarios/{id}/carteira")
+@RequestMapping("/api/carteira")
 public class CarteiraController {
     @Autowired
     private CarteiraService carteiraService;
 
     @GetMapping("/info")
     @ResponseStatus(HttpStatus.OK)
-    public CarteiraDTO infoCarteira(@PathVariable(name = "id") long idUsuario) {
-        return carteiraService.infoCarteira(idUsuario);
+    public CarteiraDTO infoCarteira(HttpSession session) {
+        return carteiraService.infoCarteira(session);
     }
 
     @PostMapping("/deposito")
     @ResponseStatus(HttpStatus.OK)
-    public Mensagem depositarValor(@PathVariable(name = "id") long idUsuario,
-                                   @RequestParam(name = "valor") float valor) {
-        return carteiraService.depositarValor(idUsuario, valor);
+    public Mensagem depositarValor(@RequestParam(name = "valor") float valor,
+                                   HttpSession session) {
+        return carteiraService.depositarValor(valor, session);
     }
 
     @PutMapping("/estado")
     @ResponseStatus(HttpStatus.OK)
-    public Mensagem mudarEstadoAtivo(@PathVariable(name = "id") long idUsuario,
-                                     @RequestParam(name = "ativo") boolean estadoAtivo) {
-        return carteiraService.mudarEstadoAtivo(idUsuario, estadoAtivo);
+    public Mensagem mudarEstadoAtivo(@RequestParam(name = "ativo") boolean estadoAtivo,
+                                     HttpSession session) {
+        return carteiraService.mudarEstadoAtivo(estadoAtivo, session);
     }
 
     @PutMapping("/cambio")
     @ResponseStatus(HttpStatus.OK)
-    public Mensagem trocarTipoMoeda(@PathVariable(name = "id") long idUsuario,
-                                    @RequestParam(name = "para") TipoMoeda tipoPara) {
-        return carteiraService.trocarTipoMoeda(idUsuario, tipoPara);
+    public Mensagem trocarTipoMoeda(@RequestParam(name = "para") TipoMoeda tipoPara,
+                                    HttpSession session) {
+        return carteiraService.trocarTipoMoeda(tipoPara, session);
     }
 }

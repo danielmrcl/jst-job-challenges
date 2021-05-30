@@ -34,13 +34,16 @@ public class UsuarioController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UsuarioDTO criarUsuario(@RequestBody @Valid UsuarioDTO usuarioDTO) {
-        return usuarioService.criarUsuario(usuarioDTO);
+    public UsuarioDTO criarUsuario(@RequestBody @Valid UsuarioDTO usuarioDTO,
+                                   @RequestHeader(name = "password") String senhaUsuario) {
+        return usuarioService.criarUsuario(usuarioDTO, senhaUsuario);
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.CREATED)
-    public UsuarioDTO atualizarUsuario(@PathVariable long id, @RequestBody @Valid UsuarioDTO usuarioDTO) {
-        return usuarioService.atualizarUsuario(id, usuarioDTO);
+    public UsuarioDTO atualizarUsuario(@PathVariable long id,
+                                       @RequestBody @Valid UsuarioDTO usuarioDTO,
+                                       @RequestHeader(name = "password", required = false) String senhaParaAtualizar) {
+        return usuarioService.atualizarUsuario(id, usuarioDTO, senhaParaAtualizar);
     }
 }

@@ -22,6 +22,9 @@ public class UsuarioService {
     private final String APIURLBASE = "https://api.eva.pingutil.com/email";
 
     @Autowired
+    private LoginService loginService;
+
+    @Autowired
     private UsuarioRepository usuarioRepository;
     private UsuarioMapper usuarioMapper = UsuarioMapper.INSTANCE;
 
@@ -38,12 +41,23 @@ public class UsuarioService {
         return usuarioMapper.toDTO(usuarioEncontrado);
     }
 
+    public UsuarioDTO usuarioPorEmail(String email) {
+        var optUsuario = usuarioRepository.findByEmail(email);
+
+        if (optUsuario.isEmpty()) {
+            String message = String.format("Usuario EMAIL %s: Não encontrado no banco de dados", email);
+            throw new ObjectNotFoundException(message);
+        }
+
+        return usuarioMapper.toDTO(optUsuario.get());
+    }
+
     public void deletarUsuarioPorId(long id) {
         var usuarioEncontrado = verificarIdUsuario(id);
         usuarioRepository.delete(usuarioEncontrado);
     }
 
-    public UsuarioDTO criarUsuario(UsuarioDTO usuarioDTO) {
+    public UsuarioDTO criarUsuario(UsuarioDTO usuarioDTO, String senhaParaSalvar) {
         verificarCpfUsuario(usuarioDTO.getCpf(), null);
         verificarEmailUsuario(usuarioDTO.getEmail(), null);
 
@@ -56,10 +70,12 @@ public class UsuarioService {
         usuarioDTO.setCarteira(carteiraPadrao);
 
         var usuarioParaSalvar = usuarioMapper.toModel(usuarioDTO);
+        loginService.criarLogin(usuarioParaSalvar, senhaParaSalvar);
+
         return usuarioMapper.toDTO(usuarioRepository.save(usuarioParaSalvar));
     }
 
-    public UsuarioDTO atualizarUsuario(long id, UsuarioDTO usuarioDTO) {
+    public UsuarioDTO atualizarUsuario(long id, UsuarioDTO usuarioDTO, String senhaParaAtualizar) {
         var usuarioEncontrado = verificarIdUsuario(id);
         verificarCpfUsuario(usuarioDTO.getCpf(), id);
         verificarEmailUsuario(usuarioDTO.getEmail(), id);
@@ -67,6 +83,10 @@ public class UsuarioService {
 
         var usuarioParaAtualizar = usuarioMapper.toModel(usuarioDTO);
         usuarioParaAtualizar.setCarteira(usuarioEncontrado.getCarteira());
+
+        if (senhaParaAtualizar != null) {
+            loginService.atualizarLogin(usuarioParaAtualizar, senhaParaAtualizar);
+        }
 
         return usuarioMapper.toDTO(usuarioRepository.save(usuarioParaAtualizar));
     }
