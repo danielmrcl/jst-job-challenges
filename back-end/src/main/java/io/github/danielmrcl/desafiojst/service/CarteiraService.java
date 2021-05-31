@@ -2,15 +2,12 @@ package io.github.danielmrcl.desafiojst.service;
 
 import io.github.danielmrcl.desafiojst.apis.CambioApi;
 import io.github.danielmrcl.desafiojst.exception.GenericErrorException;
-import io.github.danielmrcl.desafiojst.exception.LoginErrorException;
 import io.github.danielmrcl.desafiojst.model.Mensagem;
 import io.github.danielmrcl.desafiojst.model.dto.CarteiraDTO;
 import io.github.danielmrcl.desafiojst.model.enums.TipoMoeda;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
-import javax.servlet.http.HttpSession;
 
 @Service
 public class CarteiraService {
@@ -19,16 +16,16 @@ public class CarteiraService {
 
     @Autowired
     private UsuarioService usuarioService;
+    @Autowired
+    private LoginService loginService;
 
-    public CarteiraDTO infoCarteira(HttpSession session) {
-        var idUsuarioLogado = verificarUsuarioLogado(session);
+    public CarteiraDTO infoCarteira(String token) {
+        var usuario = loginService.usuarioPorToken(token);
 
-        return usuarioService.usuarioPorId(idUsuarioLogado).getCarteira();
+        return usuario.getCarteira();
     }
 
-    public Mensagem depositarValor(float valor, HttpSession session) {
-        var idUsuarioLogado = verificarUsuarioLogado(session);
-
+    public Mensagem depositarValor(float valor, String token) {
         if (valor < 1) {
             String message = String.format("O valor %.2f é muito baixo para ser depositado. Apenas valores entre 1 e 100", valor);
             throw new GenericErrorException(message);
@@ -37,7 +34,7 @@ public class CarteiraService {
             throw new GenericErrorException(message);
         }
 
-        var usuario = usuarioService.usuarioPorId(idUsuarioLogado);
+        var usuario = loginService.usuarioPorToken(token);
         var carteiraUsuario = usuario.getCarteira();
 
         if (!carteiraUsuario.isEstadoAtivo()) {
@@ -55,10 +52,8 @@ public class CarteiraService {
         );
     }
 
-    public Mensagem mudarEstadoAtivo(boolean estadoAtivo, HttpSession session) {
-        var idUsuarioLogado = verificarUsuarioLogado(session);
-
-        var usuario = usuarioService.usuarioPorId(idUsuarioLogado);
+    public Mensagem mudarEstadoAtivo(boolean estadoAtivo, String token) {
+        var usuario = loginService.usuarioPorToken(token);
         var carteiraUsuario = usuario.getCarteira();
 
         carteiraUsuario.setEstadoAtivo(estadoAtivo);
@@ -68,10 +63,8 @@ public class CarteiraService {
         return new Mensagem(String.format("Estado atualizado com sucesso!"));
     }
 
-    public Mensagem trocarTipoMoeda(TipoMoeda tipoPara, HttpSession session) {
-        var idUsuarioLogado = verificarUsuarioLogado(session);
-
-        var usuario = usuarioService.usuarioPorId(idUsuarioLogado);
+    public Mensagem trocarTipoMoeda(TipoMoeda tipoPara, String token) {
+        var usuario = loginService.usuarioPorToken(token);
         var carteiraUsuario = usuario.getCarteira();
 
         var carteiraUsuarioTipo = carteiraUsuario.getTipoMoeda();
@@ -105,15 +98,5 @@ public class CarteiraService {
                 carteiraUsuarioSaldo,
                 novoSaldo
         ));
-    }
-
-    private long verificarUsuarioLogado(HttpSession session) {
-        var idEncontrado = session.getAttribute("idUsuarioLogado");
-
-        if (idEncontrado == null) {
-            throw new LoginErrorException("Você não está logado!");
-        }
-
-        return (long) idEncontrado;
     }
 }

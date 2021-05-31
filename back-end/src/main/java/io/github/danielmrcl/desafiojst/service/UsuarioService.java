@@ -2,6 +2,7 @@ package io.github.danielmrcl.desafiojst.service;
 
 import io.github.danielmrcl.desafiojst.apis.EmailApi;
 import io.github.danielmrcl.desafiojst.exception.GenericErrorException;
+import io.github.danielmrcl.desafiojst.exception.InvalidTokenException;
 import io.github.danielmrcl.desafiojst.exception.ObjectAlreadyExistsException;
 import io.github.danielmrcl.desafiojst.exception.ObjectNotFoundException;
 import io.github.danielmrcl.desafiojst.model.Usuario;
@@ -52,9 +53,15 @@ public class UsuarioService {
         return usuarioMapper.toDTO(optUsuario.get());
     }
 
-    public void deletarUsuarioPorId(long id) {
+    public void deletarUsuarioPorId(long id, String token) {
         var usuarioEncontrado = verificarIdUsuario(id);
-        usuarioRepository.delete(usuarioEncontrado);
+        var usuarioToken = loginService.usuarioPorToken(token);
+
+        if (usuarioToken.getId() != usuarioEncontrado.getId()) {
+            throw new InvalidTokenException("Token inválido! Este Token não pertence a este Id de usuario");
+        }
+
+        loginService.deletarLoginPorUsuario(usuarioEncontrado);
     }
 
     public UsuarioDTO criarUsuario(UsuarioDTO usuarioDTO, String senhaParaSalvar) {
@@ -75,8 +82,14 @@ public class UsuarioService {
         return usuarioMapper.toDTO(usuarioRepository.save(usuarioParaSalvar));
     }
 
-    public UsuarioDTO atualizarUsuario(long id, UsuarioDTO usuarioDTO, String senhaParaAtualizar) {
+    public UsuarioDTO atualizarUsuario(long id, UsuarioDTO usuarioDTO, String senhaParaAtualizar, String token) {
         var usuarioEncontrado = verificarIdUsuario(id);
+        var usuarioToken = loginService.usuarioPorToken(token);
+
+        if (usuarioToken.getId() != usuarioEncontrado.getId()) {
+            throw new InvalidTokenException("Token inválido! Este Token não pertence a este Id de usuario");
+        }
+
         verificarCpfUsuario(usuarioDTO.getCpf(), id);
         verificarEmailUsuario(usuarioDTO.getEmail(), id);
         usuarioDTO.setId(id);

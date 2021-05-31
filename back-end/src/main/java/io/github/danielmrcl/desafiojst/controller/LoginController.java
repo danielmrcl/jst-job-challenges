@@ -1,6 +1,8 @@
 package io.github.danielmrcl.desafiojst.controller;
 
+import io.github.danielmrcl.desafiojst.model.Login;
 import io.github.danielmrcl.desafiojst.model.Mensagem;
+import io.github.danielmrcl.desafiojst.model.dto.LoginDTO;
 import io.github.danielmrcl.desafiojst.service.LoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -14,8 +16,7 @@ public class LoginController {
     private LoginService loginService;
 
     @GetMapping
-    public Mensagem logarUsuario(@RequestHeader(name = "email") String email,
-                                 @RequestHeader(name = "password") String senha, HttpSession session) {
-        return loginService.logarUsuario(email, senha, session);
+    public Mensagem logarUsuario(@RequestBody LoginDTO loginDTO) {
+        return loginService.logarUsuario(loginDTO);
     }
 }

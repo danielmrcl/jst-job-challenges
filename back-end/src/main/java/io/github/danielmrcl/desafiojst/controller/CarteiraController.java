@@ -18,28 +18,28 @@ public class CarteiraController {
 
     @GetMapping("/info")
     @ResponseStatus(HttpStatus.OK)
-    public CarteiraDTO infoCarteira(HttpSession session) {
-        return carteiraService.infoCarteira(session);
+    public CarteiraDTO infoCarteira(@RequestHeader(name = "Authorization") String token) {
+        return carteiraService.infoCarteira(token);
     }
 
     @PostMapping("/deposito")
     @ResponseStatus(HttpStatus.OK)
     public Mensagem depositarValor(@RequestParam(name = "valor") float valor,
-                                   HttpSession session) {
-        return carteiraService.depositarValor(valor, session);
+                                   @RequestHeader(name = "Authorization") String token) {
+        return carteiraService.depositarValor(valor, token);
     }
 
     @PutMapping("/estado")
     @ResponseStatus(HttpStatus.OK)
     public Mensagem mudarEstadoAtivo(@RequestParam(name = "ativo") boolean estadoAtivo,
-                                     HttpSession session) {
-        return carteiraService.mudarEstadoAtivo(estadoAtivo, session);
+                                     @RequestHeader(name = "Authorization") String token) {
+        return carteiraService.mudarEstadoAtivo(estadoAtivo, token);
     }
 
     @PutMapping("/cambio")
     @ResponseStatus(HttpStatus.OK)
     public Mensagem trocarTipoMoeda(@RequestParam(name = "para") TipoMoeda tipoPara,
-                                    HttpSession session) {
-        return carteiraService.trocarTipoMoeda(tipoPara, session);
+                                    @RequestHeader(name = "Authorization") String token) {
+        return carteiraService.trocarTipoMoeda(tipoPara, token);
     }
 }

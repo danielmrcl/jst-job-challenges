@@ -23,4 +23,7 @@ public class Login {
 
     @Column(name = "senha", nullable = false)
     private String senha;
+
+    @Column(name = "token_acesso")
+    private String tokenAcesso;
 }

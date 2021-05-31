@@ -28,22 +28,24 @@ public class UsuarioController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletarUsuarioPorId(@PathVariable long id) {
-        usuarioService.deletarUsuarioPorId(id);
+    public void deletarUsuarioPorId(@PathVariable long id,
+                                    @RequestHeader(name = "Authorization") String token) {
+        usuarioService.deletarUsuarioPorId(id, token);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UsuarioDTO criarUsuario(@RequestBody @Valid UsuarioDTO usuarioDTO,
-                                   @RequestHeader(name = "password") String senhaUsuario) {
+                                   @RequestHeader(name = "Password") String senhaUsuario) {
         return usuarioService.criarUsuario(usuarioDTO, senhaUsuario);
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.CREATED)
     public UsuarioDTO atualizarUsuario(@PathVariable long id,
+                                       @RequestHeader(name = "Authorization") String token,
                                        @RequestBody @Valid UsuarioDTO usuarioDTO,
-                                       @RequestHeader(name = "password", required = false) String senhaParaAtualizar) {
-        return usuarioService.atualizarUsuario(id, usuarioDTO, senhaParaAtualizar);
+                                       @RequestHeader(name = "Password", required = false) String senhaParaAtualizar) {
+        return usuarioService.atualizarUsuario(id, usuarioDTO, senhaParaAtualizar, token);
     }
 }
