@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpSession;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 @Service
 public class LoginService {
@@ -23,7 +25,7 @@ public class LoginService {
         var usuarioEncontrado = usuarioService.usuarioPorEmail(email);
         var loginEncontrado = loginRepository.getByUserId(usuarioEncontrado.getId()).get();
 
-        if (!senha.equals(loginEncontrado.getSenha())) {
+        if (!codificarSenha(senha).equals(loginEncontrado.getSenha())) {
             throw new LoginErrorException("Senha incorreta");
         }
 
@@ -36,7 +38,7 @@ public class LoginService {
         loginRepository.save(
                 Login.builder()
                         .usuario(usuarioParaSalvar)
-                        .senha(senhaParaSalvar)
+                        .senha(codificarSenha(senhaParaSalvar))
                         .build()
         );
     }
@@ -45,8 +47,13 @@ public class LoginService {
         var login = loginRepository.getByUserId(usuarioParaAtualizar.getId()).get();
 
         login.setUsuario(usuarioParaAtualizar);
-        login.setSenha(senhaParaAtualizar);
+        login.setSenha(codificarSenha(senhaParaAtualizar));
 
         loginRepository.save(login);
+    }
+
+    private String codificarSenha(String senhaParaSalvar) {
+        return Base64.getEncoder()
+                .encodeToString(senhaParaSalvar.getBytes(StandardCharsets.UTF_8));
     }
 }
