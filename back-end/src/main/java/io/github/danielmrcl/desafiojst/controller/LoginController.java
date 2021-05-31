@@ -15,7 +15,7 @@ public class LoginController {
     @Autowired
     private LoginService loginService;
 
-    @GetMapping
+    @PostMapping
     public Mensagem logarUsuario(@RequestBody LoginDTO loginDTO) {
         return loginService.logarUsuario(loginDTO);
     }
