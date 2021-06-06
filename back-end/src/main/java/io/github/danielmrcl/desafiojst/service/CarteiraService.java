@@ -2,30 +2,50 @@ package io.github.danielmrcl.desafiojst.service;
 
 import io.github.danielmrcl.desafiojst.apis.CambioApi;
 import io.github.danielmrcl.desafiojst.exception.GenericErrorException;
-import io.github.danielmrcl.desafiojst.model.Mensagem;
+import io.github.danielmrcl.desafiojst.model.dto.MensagemDTO;
 import io.github.danielmrcl.desafiojst.model.dto.CarteiraDTO;
 import io.github.danielmrcl.desafiojst.model.enums.TipoMoeda;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+/**
+ * Classe de serviço que implementa a lógica de Carteira.
+ *
+ * @author Daniel Marcelo
+ * @since v0.2
+ * @see io.github.danielmrcl.desafiojst.controller.CarteiraController
+ */
 @Service
+@AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class CarteiraService {
-    private final String APIKEY = "ab01db841dcd32f4a495dfce24e1fa54";
-    private final String URLBASE = "https://api.currencyscoop.com/v1/convert";
 
-    @Autowired
     private UsuarioService usuarioService;
-    @Autowired
     private LoginService loginService;
 
+    /**
+     * Consulta informações de uma carteira de usuario.
+     *
+     * @param token     Token JWT para validação do usuario da carteira.
+     * @return          Informações da carteira encontrada.
+     */
     public CarteiraDTO infoCarteira(String token) {
         var usuario = loginService.usuarioPorToken(token);
 
         return usuario.getCarteira();
     }
 
-    public Mensagem depositarValor(float valor, String token) {
+    /**
+     * Deposita um valor em uma carteira.
+     *
+     * @param valor     Valor à ser depositado.
+     * @param token     Token JWT para validação do usuario da carteira.
+     * @return          Mensagem de sucesso com o valor depositado.
+     *
+     * @throws GenericErrorException Lançado quando o atributo valor está inválido ou a carteira está desativada. Retorna mensagem de erro com código 400 (Bad Request)
+     */
+    public MensagemDTO depositarValor(float valor, String token) {
         if (valor < 1) {
             String message = String.format("O valor %.2f é muito baixo para ser depositado. Apenas valores entre 1 e 100", valor);
             throw new GenericErrorException(message);
@@ -47,12 +67,19 @@ public class CarteiraService {
 
         usuarioService.atualizarUsuarioSemVerificar(usuario);
 
-        return new Mensagem(
+        return new MensagemDTO(
                 String.format("Valor %s%.2f depositado com sucesso", carteiraUsuario.getTipoMoeda().getValor(), valor)
         );
     }
 
-    public Mensagem mudarEstadoAtivo(boolean estadoAtivo, String token) {
+    /**
+     * Muda o atributo estadoAtivo de uma carteira para Ativado ou Desativado.
+     *
+     * @param estadoAtivo   Novo estado da carteira (TRUE / FALSE).
+     * @param token         Token JWT para validação do usuario da carteira.
+     * @return              Mensagem de sucesso ao ativar.
+     */
+    public MensagemDTO mudarEstadoAtivo(boolean estadoAtivo, String token) {
         var usuario = loginService.usuarioPorToken(token);
         var carteiraUsuario = usuario.getCarteira();
 
@@ -60,10 +87,20 @@ public class CarteiraService {
 
         usuarioService.atualizarUsuarioSemVerificar(usuario);
 
-        return new Mensagem(String.format("Estado atualizado com sucesso!"));
+        return new MensagemDTO(String.format("Estado atualizado com sucesso!"));
     }
 
-    public Mensagem trocarTipoMoeda(TipoMoeda tipoPara, String token) {
+    /**
+     * Realiza a função de câmbio de moeda utilizando a API CurrencyScoop. Atualiza os atributos: saldo e tipoMoeda.
+     *
+     * @param tipoPara  Tipo para o qual sera realizado o câmbio (BRL / USD / EUR).
+     * @param token     Token JWT para validação do usuario da carteira.
+     * @return          Mensagem de sucesso com informações do câmbio.
+     */
+    public MensagemDTO trocarTipoMoeda(TipoMoeda tipoPara, String token) {
+        final String APIKEY = "ab01db841dcd32f4a495dfce24e1fa54";
+        final String URLBASE = "https://api.currencyscoop.com/v1/convert";
+
         var usuario = loginService.usuarioPorToken(token);
         var carteiraUsuario = usuario.getCarteira();
 
@@ -91,7 +128,7 @@ public class CarteiraService {
 
         usuarioService.atualizarUsuarioSemVerificar(usuario);
 
-        return new Mensagem(String.format(
+        return new MensagemDTO(String.format(
                 "Carteira atualizada com sucesso! | Tipo: %s -> %s | Saldo: %.2f -> %.2f",
                 carteiraUsuarioTipo,
                 novoTipo,
