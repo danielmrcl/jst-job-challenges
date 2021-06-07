@@ -9,6 +9,7 @@ import io.github.danielmrcl.desafiojst.model.dto.LoginDTO;
 import io.github.danielmrcl.desafiojst.model.dto.UsuarioDTO;
 import io.github.danielmrcl.desafiojst.repository.LoginRepository;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,7 +43,9 @@ public class LoginService {
      */
     public MensagemDTO logarUsuario(LoginDTO loginDTO) {
         var usuarioEncontrado = usuarioService.usuarioPorEmail(loginDTO.getEmail());
-        var loginEncontrado = loginRepository.getByUserId(usuarioEncontrado.getId()).get();
+        var talvezLoginEncontrado = loginRepository.getByUserId(usuarioEncontrado.getId());
+
+        var loginEncontrado = talvezLoginEncontrado.isPresent() ? talvezLoginEncontrado.get() : null;
 
         if (!codificarSenha(loginDTO.getSenha()).equals(loginEncontrado.getSenha())) {
             throw new LoginErrorException("Senha incorreta");
@@ -98,17 +101,18 @@ public class LoginService {
 
         try {
             claim = tokenService.pegarToken(token);
-        } catch (Exception e) {
+        } catch (ExpiredJwtException exjwt) {
+            throw new InvalidTokenException("Token expirado! Realize o Login novamente para gerar um novo");
+        } catch (Exception ex) {
             throw new InvalidTokenException("Token inválido! Realize o Login para gerar um novo");
         }
 
         var idUsuario = Long.parseLong(claim.getSubject());
-        var loginUsuario = loginRepository.getByUserId(idUsuario).get();
+        var talvezLoginUsuario = loginRepository.getByUserId(idUsuario);
+        var loginUsuario = talvezLoginUsuario.orElse(null);
 
         if (!token.equals(loginUsuario.getTokenAcesso())) {
             throw new InvalidTokenException("Token inválido! Realize o Login para gerar um novo");
-        } else if (claim.getExpiration().before(new Date(System.currentTimeMillis()))) {
-            throw new InvalidTokenException("Token expirado! Realize o Login novamente para gerar um novo");
         }
 
         return usuarioService.usuarioPorId(idUsuario);
@@ -130,7 +134,7 @@ public class LoginService {
      * @param senhaParaCodificar    Senha em texto que será codificada.
      * @return                      Retorna a senha em código Base64.
      */
-    private String codificarSenha(String senhaParaCodificar) {
+    protected String codificarSenha(String senhaParaCodificar) {
         return Base64.getEncoder()
                 .encodeToString(senhaParaCodificar.getBytes(StandardCharsets.UTF_8));
     }

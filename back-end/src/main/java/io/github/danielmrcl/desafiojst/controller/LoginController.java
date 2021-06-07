@@ -4,6 +4,7 @@ import io.github.danielmrcl.desafiojst.model.dto.MensagemDTO;
 import io.github.danielmrcl.desafiojst.model.dto.LoginDTO;
 import io.github.danielmrcl.desafiojst.service.LoginService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,6 +14,7 @@ public class LoginController {
     private LoginService loginService;
 
     @PostMapping
+    @ResponseStatus(HttpStatus.OK)
     public MensagemDTO logarUsuario(@RequestBody LoginDTO loginDTO) {
         return loginService.logarUsuario(loginDTO);
     }
