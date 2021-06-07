@@ -2,46 +2,33 @@
 
 ## Descrição
 
-Você precisa desenvolver um **REST API**, que deverá ser implementado em **Java, Scala, Kotlin ou GO**.
-O conteúdo da aplicação e o framework que será utilizado é de escolha do candidato, sendo necessário apenas que os requisitos abaixo sejam preenchidos.
+Rest API que cadastra usuários e gerencia carteiras digitais com câmbio de moeda.  
 
-Você deve fazer um **fork do projeto** e deixa-lo **público**, para que possamos analisar commits e seu processo de desenvolvimento.
+#### Desenvolvido com as Tecnologias:  
+  - Java 11;  
+  - Spring Boot;  
+  - PostgreSQL;  
 
-Links com conteúdo para alguns dos temas citados serão fornecidos no fim da descrição do desafio.
+#### Também Utilizado:  
+  - GitFlow;  
+  - JavaDoc;  
+  - Swagger;  
+  - Testes Unitários;  
 
-### Requisistos Obrigatórios e Inegociáveis
+#### Apis Consumidas:  
+  1. http://api.eva.pingutil.com/email?email= → Validar email e evitar spam.  
+  2. https://api.currencyscoop.com/v1/convert?from=&to=&amount=&api_key=ab01db841dcd32f4a495dfce24e1fa54 → Conversão de saldo da carteira.  
 
-- Utilizar arquitetura **MVC**
-- Utilizar banco de dados relacional ou NoSQL
-- Rotinas mínimas:
-  - Autenticação de usuários
-  - CRUD de usuários
-  - Mais quatro rotas que tenham sentido com a proposta da API
-- Consumir **pelo menos DUAS** APIs deste repositório: [Public Apis](https://github.com/public-apis/public-apis)
-
-### Requisitos Diferenciais
-
-- Desenvolver utilizando o framework [Spring Boot](https://spring.io/projects/spring-boot) ou [Play! Framework]( https://www.playframework.com/)
-- Utilizar o banco de dados:
-  - PostgreSQL
-  - MongoDB
-- Utilizar arquitetura [Reativa](https://www.reactivemanifesto.org/pt-BR)
-- Boas práticas com [**Design Patterns**](https://github.com/beatrizacbs/java-design-patterns-pocs)
-- Utilizar práticas de **Clean Code**
-- Documentar utilizando **JavaDoc**
-- Utilizar o **Swagger**
-- **Testes** unitários e/ou de integração
-- Aplicação do **GitFlow** (não é necessária a utilização da CLI do gitflow, somente a utilização do conceito)
-
-### Links Úteis
-
-- [Design Patterns](https://github.com/beatrizacbs/java-design-patterns-pocs)
-- [GitFlow](https://medium.com/trainingcenter/utilizando-o-fluxo-git-flow-e63d5e0d5e04)
-- [MVC](https://medium.com/upday-devs/android-architecture-patterns-part-1-model-view-controller-3baecef5f2b6)
-- [Teste](https://developer.android.com/training/testing/fundamentals), [Junit](https://medium.com/grtech-student-blog/getting-started-with-junit-92ab1ab91c93)
-- [Clean Code](https://simpleprogrammer.com/clean-code-principles-better-programmer/)
-- [Manifesto Reativo](https://www.reactivemanifesto.org/pt-BR)
-- [Play! Framework](https://www.playframework.com/)
-- [Spring Boot](https://spring.io/projects/spring-boot)
-- [MongoDB]( https://www.mongodb.com/ )
-- [PostgreSQL]( https://www.postgresql.org/ )
+#### Rotas:  
+  - `POST`    : `/api/login` → Valida email e senha e retorna um Token JWT de acesso.
+<br><br>
+  - `GET`     : `/api/usuarios` → Lista todos os usuários cadastrados no banco.  
+  - `GET`     : `/api/usuarios/{id}` → Busca um usuario por ID.  
+  - `DELETE`  : `/api/usuarios/{id}` → Deletar um usuario por ID.  
+  - `POST`    : `/api/usuarios` → Criar um usuário com carteira e login.  
+  - `PUT`     : `/api/usuarios/{id}` → Atualizar dados de um usuário.
+<br><br>
+  - `GET`     : `/api/carteira/info` → Busca informações de uma carteira.  
+  - `POST`    : `/api/carteira/deposito?valor=` → Deposita um valor em uma carteira.  
+  - `PUT`     : `/api/carteira/estado?ativo=` → Ativa ou desativa uma carteira.  
+  - `PUT`     : `/api/carteira/cambio?para=` → Realiza o câmbio de moeda de uma carteira.  
